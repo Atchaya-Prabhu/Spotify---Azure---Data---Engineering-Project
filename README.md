@@ -1,16 +1,28 @@
 # Spotify Azure Data Engineering Project
 
-This project was completed for learning purposes based on an existing Azure Data Engineering implementation.
+This end-to-end project helped me explore how modern data engineering workflows come alive on Azure, from data ingestion to transformation, orchestration, and CI/CD automation. 
 
-Technologies:
-- Azure Data Factory
-- Azure Data Lake Storage
-- Azure Databricks
-- Azure Synapse Analytics
-- Spotify API
-
-Key Learnings:
-- Data ingestion pipelines
-- Lakehouse architecture
-- ETL/ELT workflows
-- Data orchestration using Azure services
+💼 Tech Stack Highlights:
+ ✅ Azure Data Factory (ADF)
+ ✅ Azure SQL Database
+ ✅ Azure Databricks
+ ✅ APIs for real-time ingestion
+ ✅ Azure Data Lake Storage (ADLS)
+ ✅ Unity Catalog
+ ✅ Spark Streaming
+ ✅ PySpark with Python Classes
+ ✅ Delta Live Tables (DLT)
+ ✅ Star Schema & Slowly Changing Dimensions (SCD)
+ ✅ CI/CD with GitHub
+ ✅ Databricks Asset Bundles (DAB)
+ 
+🌟 Key Learnings & Highlights:
+ ＊ Built incremental ingestion pipelines in Azure Data Factory with API sources and SQL sink.
+ ＊ Processed and transformed raw-to-clean data using Databricks PySpark notebooks with modular Python code.
+ ＊ Designed Bronze → Silver → Gold architecture on Azure Data Lake.
+ ＊ Developed STAR Schema and implemented SCD Type 1 & 2 for dimension management.
+ ＊ Streamed real-time data using Spark Structured Streaming & Autoloader.
+ ＊ Leveraged Unity Catalog for centralized governance and access control.
+ ＊ Deployed Delta Live Tables and configured Databricks Asset Bundles for CI/CD integration.
+💡 Each stage simulated real-world data engineering challenges:
+ data ingestion, orchestration, transformation, and production deployment.
