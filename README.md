@@ -1,3 +1,9 @@
+# 🎵 Spotify Azure Data Engineering Project
+
+## 📌 Project Overview
+
+This repository showcases an end-to-end Azure Data Engineering solution built using the Spotify API. It demonstrates modern data engineering practices including data ingestion, orchestration, transformation, Medallion Architecture, Delta Live Tables, Unity Catalog, and CI/CD to build analytics-ready data pipelines on Azure.
+
 # Spotify Azure Data Engineering Project
 
 This end-to-end project helped me explore how modern data engineering workflows come alive on Azure, from data ingestion to transformation, orchestration, and CI/CD automation. 
