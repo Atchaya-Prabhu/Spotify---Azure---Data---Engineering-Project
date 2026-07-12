@@ -1,284 +1,222 @@
-# 🎵 Spotify Real-Time Data Engineering Pipeline (Azure | Databricks | Delta Live Tables)
+# 🎵 Spotify Real-Time Data Engineering Pipeline (Azure | Databricks)
 
-![Azure](https://img.shields.io/badge/Azure-Data%20Engineering-0078D4?logo=microsoftazure&logoColor=white)
-![Databricks](https://img.shields.io/badge/Databricks-Delta%20Lake-EF3E42?logo=databricks&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-![PySpark](https://img.shields.io/badge/PySpark-Structured%20Streaming-orange)
-![ADF](https://img.shields.io/badge/Azure-Data%20Factory-blue)
+> **Production-grade Azure Data Engineering Pipeline implementing Incremental Loading, CDC, Medallion Architecture, Delta Lake, Unity Catalog, and Delta Live Tables (DLT).**
 
 ---
 
 # 📌 Project Overview
 
-This project demonstrates a **production-grade end-to-end Azure Data Engineering solution** that ingests Spotify streaming data from Azure SQL Database, processes incremental data using Change Data Capture (CDC), and transforms it into analytics-ready datasets following the **Medallion Architecture (Bronze → Silver → Gold)**.
+This repository demonstrates an enterprise-grade **end-to-end Azure Data Engineering pipeline** that ingests Spotify streaming data from **Azure SQL Database**, performs **incremental loading using Azure Data Factory**, transforms data using **Azure Databricks (PySpark)**, and produces analytics-ready datasets using **Delta Live Tables (DLT)**.
 
-The pipeline leverages **Azure Data Factory, Azure Data Lake Storage Gen2, Azure Databricks, Delta Lake, Spark Structured Streaming, Unity Catalog, and Delta Live Tables (DLT)** to build a scalable, secure, and enterprise-ready data platform.
+The project follows the **Medallion Architecture (Bronze → Silver → Gold)** and implements **Change Data Capture (CDC)**, **Spark Structured Streaming**, **Delta Lake**, **Unity Catalog**, and **Databricks Asset Bundles (DABs)** following real-world production practices.
 
 ---
 
-# 🏗️ Architecture
+# 🎬 End-to-End Pipeline
 
 <p align="center">
-  <img src="images/architecture.png" width="900">
+  <img src="IMAGES/Architecture.gif" width="950">
 </p>
 
 ---
 
-# 🚀 End-to-End Workflow
+# 🛠️ Tech Stack
+
+| Category | Technology |
+|------------|------------|
+| Cloud | Microsoft Azure |
+| Storage | Azure Data Lake Storage Gen2 |
+| Database | Azure SQL Database |
+| ETL | Azure Data Factory |
+| Processing | Azure Databricks |
+| Compute | Apache Spark |
+| Language | Python, PySpark |
+| Streaming | Spark Structured Streaming |
+| Storage Format | Delta Lake |
+| Catalog | Unity Catalog |
+| Gold Layer | Delta Live Tables |
+| Deployment | Databricks Asset Bundles |
+| Source Control | GitHub |
+
+---
+
+# 🏛️ Architecture Flow
 
 ```
 Azure SQL Database
         │
         ▼
 Azure Data Factory
-(Watermark Incremental Load)
+(Incremental Loading + CDC)
         │
         ▼
 Bronze Layer (ADLS Gen2)
 Raw Parquet Files
         │
         ▼
-Azure Databricks
-Spark Structured Streaming
+Silver Layer (Databricks)
+Cleaning
+Deduplication
+Streaming
+Transformations
         │
         ▼
-Silver Layer (Delta Lake)
-Data Cleansing & Transformations
+Gold Layer (DLT)
+CDC
+SCD Type 1
+Star Schema
         │
         ▼
-Delta Live Tables (DLT)
-CDC + SCD Type 1 Processing
-        │
-        ▼
-Gold Layer
-Analytics Ready Tables
-        │
-        ▼
-Power BI / SQL Analytics
+Azure Synapse / Power BI
+Analytics & Reporting
 ```
 
 ---
 
-# 🛠️ Technology Stack
+# 📥 Phase 1 – Incremental Data Ingestion (Azure Data Factory)
 
-| Category | Technologies |
-|-----------|--------------|
-| Cloud | Microsoft Azure |
-| Storage | Azure Data Lake Storage Gen2 |
-| Database | Azure SQL Database |
-| Data Processing | Azure Databricks |
-| Framework | Apache Spark |
-| Streaming | Spark Structured Streaming |
-| Data Format | Delta Lake |
-| Orchestration | Azure Data Factory |
-| Catalog | Unity Catalog |
-| CI/CD | Databricks Asset Bundles |
-| Programming | Python, PySpark |
-| Security | Azure Managed Identity |
-| Data Modeling | Medallion Architecture |
+The ingestion layer uses **Azure Data Factory** to extract data incrementally from Azure SQL Database.
 
----
+Instead of copying the entire dataset every execution, a **watermark table** tracks the last processed timestamp. Only new or updated records are ingested into the Bronze layer.
 
-# ⭐ Key Features
+### Features
 
-- Incremental Data Loading using CDC
-- Watermark-Based Processing
-- Azure Data Factory Orchestration
-- Bronze, Silver & Gold Architecture
-- Spark Structured Streaming
-- Delta Lake
-- Delta Live Tables (DLT)
-- Unity Catalog
-- Databricks Asset Bundles
-- Managed Identity Authentication
-- Schema Evolution
-- Fault Tolerant Streaming
-- Production Ready Design
+- Metadata-driven pipeline
+- Lookup Activity
+- ForEach Activity
+- Incremental Copy
+- Watermark Table
+- CDC Logic
+- Dynamic SQL Query
+- Parameterized Pipelines
 
 ---
 
-# 📂 Project Structure
+## Azure Data Factory Pipeline
 
-```
-spotify-data-engineering
-│
-├── adf
-│   ├── pipelines
-│   ├── linked_services
-│   └── datasets
-│
-├── databricks
-│   ├── bronze
-│   ├── silver
-│   ├── gold
-│   └── utils
-│
-├── images
-│
-├── architecture
-│
-└── README.md
-```
+<p align="center">
+  <img src="IMAGES/adf_pipeline.png" width="1000">
+</p>
 
 ---
 
 # 🥉 Bronze Layer
 
-## Objective
+The Bronze layer stores raw source data exactly as received from Azure SQL Database.
 
-The Bronze layer stores raw data exactly as received from the source system without applying business transformations.
+### Features
 
-### Source
-
-- Azure SQL Database
-
-### Destination
-
-- Azure Data Lake Storage Gen2
-
-### Data Format
-
-- Parquet
-
-### Implementation
-
-Azure Data Factory performs incremental ingestion by extracting only newly inserted or updated records using a watermark column.
-
-### Key Features
-
-- Incremental loading
-- Metadata driven pipeline
-- Parameterized datasets
-- Dynamic SQL queries
-- Watermark tracking
-- Error handling
+- Raw data ingestion
+- Parquet files
+- Historical storage
+- Schema preservation
+- Immutable storage
+- Landing zone
 
 ---
 
-# 🔄 Watermark-Based Incremental Loading
+# 🥈 Phase 2 – Silver Layer (Azure Databricks)
 
-The pipeline stores the latest processed timestamp after every successful execution.
+The Silver layer performs data cleansing and business transformations using **Spark Structured Streaming**.
 
-During the next run:
+Each incoming dataset is processed using **Auto Loader**, cleaned, validated, deduplicated, and stored as Delta tables.
 
-```
-Current Timestamp >
-Last Processed Timestamp
-```
-
-Only newly inserted or updated records are extracted.
-
-Benefits
-
-- Faster execution
-- Lower compute cost
-- Reduced network traffic
-- No duplicate processing
+The project writes Delta files directly into ADLS Gen2 before registering them in Unity Catalog.
 
 ---
 
-# 🥈 Silver Layer
+## Databricks Notebook
 
-The Silver layer performs data cleansing, validation, and standardization using Azure Databricks and Spark Structured Streaming.
-
----
-
-## Processing Steps
-
-### Read Streaming Data
-
-Uses Auto Loader to continuously ingest files from the Bronze layer.
-
-```python
-spark.readStream \
-    .format("cloudFiles") \
-    .option("cloudFiles.format","parquet")
-```
+<p align="center">
+  <img src="IMAGES/silver_notebook.png" width="1000">
+</p>
 
 ---
 
-### Data Cleaning
+## Silver Layer Transformations
 
-- Remove duplicate records
-- Drop rescued columns
-- Standardize text values
-- Handle schema evolution
-- Data validation
+Implemented transformations include:
 
----
+- Auto Loader
+- Schema Evolution
+- Structured Streaming
+- Remove Duplicate Records
+- Drop Rescued Columns
+- Uppercase User Names
+- Duration Category Creation
+- Remove Special Characters
+- Data Validation
+- Delta Table Creation
 
-### Business Transformations
-
-Examples include:
+Example transformations:
 
 - Convert usernames to uppercase
-- Categorize track duration
-- Remove invalid characters
-- Create derived columns
+- Categorize tracks into Low / Medium / High duration
+- Remove unwanted characters
+- Remove duplicate records
+- Handle schema evolution automatically
 
 ---
 
-### Store as Delta
+# 🥇 Phase 3 – Gold Layer (Delta Live Tables)
 
-The transformed data is written as Delta tables into the Silver layer.
+The Gold layer is implemented using **Databricks Delta Live Tables (DLT)**.
 
-Benefits
-
-- ACID transactions
-- Time Travel
-- Schema Enforcement
-- Efficient Reads
-- Versioning
+Instead of traditional notebook pipelines, declarative DLT pipelines manage data lineage, dependencies, CDC logic, and data quality automatically.
 
 ---
 
-# 🥇 Gold Layer
+## Gold Layer Features
 
-The Gold layer contains curated, business-ready datasets optimized for reporting and analytics.
-
-It is implemented using **Delta Live Tables (DLT).**
+- Delta Live Tables
+- Streaming Tables
+- APPLY CHANGES
+- Change Data Capture
+- SCD Type 1
+- Data Lineage
+- Automatic Dependency Management
 
 ---
 
-## Gold Layer Workflow
+## Gold Layer Flow
 
-### Step 1
-
-Read Silver Layer as Streaming Tables
-
-### Step 2
-
-Create Staging Tables
-
-### Step 3
-
-Apply CDC
-
-### Step 4
-
-Merge Updates using SCD Type 1
-
-### Step 5
-
-Publish Analytics Ready Tables
+```
+Silver Tables
+      │
+      ▼
+Streaming Staging Tables
+      │
+      ▼
+Delta Live Tables
+(APPLY CHANGES)
+      │
+      ▼
+Gold Tables
+      │
+      ▼
+Power BI / Synapse Analytics
+```
 
 ---
 
 # 🔄 Change Data Capture (CDC)
 
-This project uses Delta Live Tables **apply_changes()** to automatically process:
+CDC is implemented throughout the pipeline to ensure only new and modified records are processed.
 
-- Inserts
-- Updates
+### CDC Features
 
-The pipeline maintains only the latest version of each record using SCD Type 1.
+- Watermark Table
+- Incremental SQL Queries
+- Delta MERGE
+- APPLY CHANGES
+- Streaming Updates
 
-Benefits
+Benefits:
 
-- Incremental processing
-- High performance
-- Simplified MERGE logic
-- Reduced compute cost
+- Faster Processing
+- Lower Compute Cost
+- No Duplicate Processing
+- Production Ready
 
 ---
 
@@ -286,92 +224,128 @@ Benefits
 
 The project follows Azure security best practices.
 
+Implemented security includes:
+
 - Azure Managed Identity
-- Role Based Access Control (RBAC)
-- Unity Catalog
-- Least Privilege Access
+- RBAC (Role-Based Access Control)
+- Unity Catalog Permissions
 - External Locations
-- Secure ADLS Authentication
+- Secret-less Authentication
+- ADLS Gen2 Secure Access
 
 ---
 
 # ⚡ Performance Optimizations
 
-- Incremental Processing
-- Watermark Pattern
+Several optimizations are implemented to improve performance.
+
+- Incremental Loading
 - Spark Structured Streaming
-- Delta Lake
-- Schema Evolution
 - Auto Loader
-- Checkpointing
 - Trigger Once
-- File Compaction
-- Z-Ordering
-- Fault Tolerant Processing
+- Delta Lake
+- Checkpointing
+- Schema Evolution
+- Idempotent Pipelines
+- Delta MERGE
+- Optimized Delta Reads
 
 ---
 
 # 📊 Business Use Cases
 
-- Music Streaming Analytics
+The pipeline enables several real-world analytical scenarios.
+
 - User Listening Behaviour
-- Artist Popularity
-- Track Performance
-- Daily Streaming Metrics
-- User Engagement Analysis
-- Power BI Reporting
-- Near Real-Time Analytics
+- Artist Popularity Analysis
+- Track Popularity
+- Streaming Analytics
+- Near Real-Time Dashboards
+- Business Intelligence Reporting
+- Customer Engagement Analytics
 
 ---
 
-# 📈 Project Highlights
+# 📂 Repository Structure
 
-✔ End-to-End Azure Data Engineering Solution
-
-✔ Enterprise Medallion Architecture
-
-✔ Incremental CDC Processing
-
-✔ Azure Data Factory Pipelines
-
-✔ Azure Databricks
-
-✔ Delta Live Tables
-
-✔ Unity Catalog
-
-✔ Structured Streaming
-
-✔ Delta Lake
-
-✔ Databricks Asset Bundles
-
-✔ Production-Ready Design
+```
+Spotify-Azure-Data-Engineering-Project
+│
+├── ADF
+│   ├── Pipelines
+│   ├── Linked Services
+│   └── Datasets
+│
+├── Databricks
+│   ├── Bronze
+│   ├── Silver
+│   ├── Gold
+│   └── Utils
+│
+├── Architecture
+│
+├── Images
+│   ├── Architecture.png
+│   ├── Architecture.gif
+│   ├── adf_pipeline.png
+│   ├── silver_notebook.png
+│
+└── README.md
+```
 
 ---
 
-# 🎯 Skills Demonstrated
+# ⭐ Skills Demonstrated
 
-- Azure Data Engineering
 - Azure Data Factory
+- Azure SQL Database
+- Azure Data Lake Storage Gen2
 - Azure Databricks
-- PySpark
 - Apache Spark
+- PySpark
+- Spark Structured Streaming
 - Delta Lake
-- Delta Live Tables
 - Unity Catalog
-- Data Warehousing
+- Delta Live Tables
+- Databricks Asset Bundles
+- Change Data Capture (CDC)
+- Incremental Loading
+- Medallion Architecture
 - ETL / ELT
-- Data Modeling
-- Incremental Processing
-- Change Data Capture
+- Data Engineering
 - Lakehouse Architecture
 - Cloud Data Engineering
 
 ---
 
-# ✅ Conclusion
+# 🚀 Key Highlights
 
-This project demonstrates a scalable, production-ready Azure Lakehouse solution built using modern cloud-native technologies. It showcases end-to-end data ingestion, incremental processing with Change Data Capture (CDC), Spark Structured Streaming, Delta Lake, and Delta Live Tables to deliver reliable, analytics-ready datasets.
+✅ End-to-End Azure Data Engineering Project
 
-The solution emphasizes performance, security, maintainability, and industry best practices, reflecting real-world enterprise data engineering workflows on Microsoft Azure.
+✅ Metadata-Driven Azure Data Factory Pipelines
+
+✅ Incremental Loading using Watermark Logic
+
+✅ Change Data Capture (CDC)
+
+✅ Medallion Architecture (Bronze → Silver → Gold)
+
+✅ Spark Structured Streaming
+
+✅ Delta Lake
+
+✅ Unity Catalog
+
+✅ Delta Live Tables (DLT)
+
+✅ Production-Ready Design
+
+---
+
+# 👨‍💻 Author
+
+**AtMunesh**
+
+Azure Data Engineer | Databricks | PySpark | Azure Data Factory | Microsoft Fabric | SQL | Power BI
+
+If you found this project useful, consider giving it a ⭐ on GitHub!
